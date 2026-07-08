@@ -1,10 +1,22 @@
 # Awesome Hermes for Developers
 
-*[Read in English](README.en.md)*
-
 Un catálogo curado de [Skills](https://agentskills.io) para [Hermes Agent](https://github.com/NousResearch/hermes-agent), organizado por stack tecnológico — no por caso de uso genérico.
 
-> Piloto: 3 de 16 categorías planeadas (Next.js, Docker, Claude Code). El resto se agrega una vez validado el formato.
+> 9 categorías activas. Cada una se investigó y escribió por separado — algunas curan skills reales de la comunidad, otras son skills originales de Dominicode donde el ecosistema todavía no tenía nada específico.
+
+## Categorías
+
+| Categoría | Contenido |
+|---|---|
+| [FastAPI](./FastAPI/) | Curada + skill original |
+| [AWS](./AWS/) | Curada + skill original |
+| [Azure](./Azure/) | Curada + skill original |
+| [PostgreSQL](./PostgreSQL/) | Curada + skill original |
+| [Cursor](./Cursor/) | Curada + skill original |
+| [Claude Code](./Claude%20Code/) | Curada |
+| [Codex](./Codex/) | Curada + skill original |
+| [MCP](./MCP/) | Curada + skill original |
+| [AG-UI](./AG-UI/) | 100% skill original (no existe nada de la comunidad todavía) |
 
 ## Cómo funciona este repo
 
