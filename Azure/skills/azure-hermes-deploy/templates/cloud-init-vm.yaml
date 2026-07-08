@@ -1,0 +1,57 @@
+#cloud-config
+# Illustrative cloud-init for the Azure VM path of azure-hermes-deploy.
+# Pass via `az vm create --custom-data cloud-init-vm.yaml` on a fresh
+# Ubuntu 22.04 LTS VM that already has a managed data disk attached and a
+# system-assigned managed identity with "Key Vault Secrets User" on the vault.
+# Not yet run end-to-end — treat as a reviewed starting point, not a black box.
+
+package_update: true
+packages:
+  - docker.io
+  - jq
+
+runcmd:
+  # 1. Format and mount the attached data disk for persistent Hermes state.
+  #    Adjust /dev/sdc to match `lsblk` output on the actual VM size/family.
+  - [ mkfs.ext4, /dev/sdc ]
+  - [ mkdir, -p, /mnt/hermes-data ]
+  - [ mount, /dev/sdc, /mnt/hermes-data ]
+  - echo '/dev/sdc /mnt/hermes-data ext4 defaults,nofail 0 2' >> /etc/fstab
+
+  # 2. Pull secrets from Key Vault using the VM's managed identity.
+  #    Requires the Azure CLI; installed separately or baked into a custom image.
+  - >
+    az login --identity --allow-no-subscriptions
+  - >
+    echo "OPENAI_API_KEY=$(az keyvault secret show --vault-name kv-hermes -n openai-api-key --query value -o tsv)"
+    > /etc/hermes.env
+  - >
+    echo "TELEGRAM_BOT_TOKEN=$(az keyvault secret show --vault-name kv-hermes -n telegram-bot-token --query value -o tsv)"
+    >> /etc/hermes.env
+  - [ chmod, "600", /etc/hermes.env ]
+
+  # 3. Install Hermes Agent (placeholder — replace with the real install
+  #    command for your Hermes distribution/version).
+  - [ bash, -c, "curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/install.sh | bash" ]
+
+  # 4. Register as a systemd user service pointing at the persistent disk.
+  - [ mkdir, -p, /home/hermes/.config/systemd/user ]
+  - >
+    cat <<'EOF' > /home/hermes/.config/systemd/user/hermes-agent.service
+    [Unit]
+    Description=Hermes Agent
+
+    [Service]
+    EnvironmentFile=/etc/hermes.env
+    Environment=HERMES_HOME=/mnt/hermes-data
+    ExecStart=/usr/local/bin/hermes start --terminal-backend docker
+    Restart=on-failure
+
+    [Install]
+    WantedBy=default.target
+    EOF
+  - [ loginctl, enable-linger, hermes ]
+  - [ systemctl, --user, --machine, "hermes@", enable, --now, hermes-agent.service ]
+
+# NSG should already restrict inbound to SSH (22) from the operator's IP
+# only — this cloud-init does not open any additional ports.

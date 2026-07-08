@@ -1,0 +1,18 @@
+%% Architecture reference for azure-hermes-deploy.
+%% Render with any Mermaid-compatible viewer (GitHub renders .md-embedded
+%% mermaid blocks natively; paste this into https://mermaid.live for the raw file).
+
+flowchart LR
+    subgraph ACA["Container Apps path"]
+        A1[Container App\nhermes-agent] -- secretRef --> A2[Key Vault\nopenai-api-key\ntelegram-bot-token]
+        A1 -- volume mount --> A3[Azure Files share\nhermes-state]
+        A1 -- system-assigned identity --> A2
+    end
+
+    subgraph VM["Azure VM path"]
+        V1[Ubuntu 22.04 VM\nHermes + Docker sandbox] -- managed identity --> V2[Key Vault\nopenai-api-key\ntelegram-bot-token]
+        V1 -- mount --> V3[Managed Disk\n/mnt/hermes-data]
+        V1 -- terminal.backend: docker --> V4[Sandbox container\nno host FS access]
+    end
+
+    NSG[NSG: operator IP only] --> V1
