@@ -1,0 +1,40 @@
+%% Arquitectura propuesta para hermes-ag-ui-bridge -- PROPUESTA, no desplegada.
+%% Renderiza con cualquier visor compatible con Mermaid (GitHub renderiza bloques
+%% mermaid embebidos en Markdown nativamente; pega este archivo crudo en
+%% https://mermaid.live si lo necesitas aparte).
+
+flowchart LR
+    subgraph Frontend["Frontend (React / CopilotKit / cualquier cliente AG-UI)"]
+        F1[UI de chat / dashboard]
+        F2[Tools declaradas por el frontend\nRunAgentInput.tools]
+    end
+
+    subgraph Bridge["agui_adapter/ (propuesto, no existe hoy)"]
+        B1[server.py\nendpoint POST + SSE]
+        B2[session.py\nthread_id/run_id <-> sesión Hermes]
+        B3[events.py\ntraductor StreamEvent -> AG-UI]
+        B4[tools.py\nregistra toolset transitorio del run]
+    end
+
+    subgraph Hermes["Hermes Agent (código público existente)"]
+        H1[run_agent.py\nloop del agente]
+        H2["gateway/stream_events.py\nMessageChunk, ToolCallChunk, ..."]
+        H3[session_context.py]
+        H4["toolsets.py / model_tools.py"]
+        H5["acp_adapter/\n(patrón hermano, protocolo ACP)"]
+    end
+
+    F1 -- "POST RunAgentInput (SSE)" --> B1
+    B1 -- "RunStarted / TextMessageContent / ToolCallStart / ..." --> F1
+    F2 -- "tools: [...]" --> B4
+    B4 -- "toolset transitorio" --> H4
+
+    B1 --> B2 --> H3
+    H1 --> H2
+    H2 -- "StreamEvent" --> B3
+    B3 -- "eventos AG-UI" --> B1
+
+    F1 -. "resultado de tool\n(nuevo RunAgentInput, msg role:tool)" .-> B1
+    B1 -. "inyecta resultado en la sesión\n(sin verificar contra el código real)" .-> H3
+
+    H5 -. "mismo patrón,\notro protocolo (ACP, no AG-UI)" .-> H1
