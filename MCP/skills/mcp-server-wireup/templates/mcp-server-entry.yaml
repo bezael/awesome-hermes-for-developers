@@ -1,0 +1,31 @@
+# Plantilla para agregar UN servidor MCP a ~/.hermes/config.yaml
+#
+# 1. Copia solo el bloque `mcp_servers:` (o la entrada interna, si ya tienes el bloque) hacia tu
+#    config.yaml real — como clave de NIVEL RAÍZ, hermana de `terminal:` y `approvals:`.
+# 2. Reemplaza <alias>, <command>, <args> y las entradas de <env> por las reales de tu servidor.
+# 3. Corre `hermes doctor` antes de arrancar una sesión.
+# 4. Aplica `chmod 600 ~/.hermes/config.yaml` si agregaste algún secreto real en `env`.
+
+mcp_servers:
+  # --- Ejemplo 1: servidor npx-able (el más común para servidores oficiales/comunidad) ---
+  <alias>:                       # ej: github, linear, sentry — el nombre que verás en Hermes
+    command: npx
+    args: ["-y", "<paquete-npm-del-servidor>"]
+    env:
+      <VAR_REQUERIDA_1>: "<valor>"
+      # Agrega solo las variables que el servidor realmente necesita — no copies todo tu .env
+      # "por si acaso". Cada línea aquí es una credencial que ese subproceso puede leer.
+
+  # --- Ejemplo 2: binario local ya instalado, sin npx ---
+  # <otro-alias>:
+  #   command: /usr/local/bin/mi-servidor-mcp
+  #   args: ["--flag-si-aplica"]
+  #   env:
+  #     API_KEY: "<valor>"
+
+  # --- Ejemplo 3: servidor Python vía uv/uvx ---
+  # <otro-alias>:
+  #   command: uvx
+  #   args: ["mi-paquete-mcp-python"]
+  #   env:
+  #     API_KEY: "<valor>"

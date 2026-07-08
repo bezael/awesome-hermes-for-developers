@@ -1,0 +1,17 @@
+# Plantilla para ~/.hermes/.env
+#
+# IMPORTANTE — lee references/credential-filtering.md antes de asumir cómo funciona esto:
+# a la fecha de esta skill, no hay una sintaxis de interpolación CONFIRMADA que haga que
+# `mcp_servers.<alias>.env` en config.yaml lea automáticamente valores de este archivo.
+# Trata este .env como tu bitácora maestra de secretos (un solo lugar para rotar/auditar
+# tokens), desde donde copias manualmente el valor hacia el bloque `env:` de config.yaml
+# cuando conectas un servidor MCP nuevo — no como una fuente que Hermes consulta en runtime
+# para ese bloque en particular.
+#
+# chmod 600 ~/.hermes/.env después de crearlo.
+
+# Ejemplo — token de GitHub usado por el servidor MCP "github"
+GITHUB_PERSONAL_ACCESS_TOKEN=ghp_xxx
+
+# Ejemplo — API key usada por otro servidor MCP
+# SENTRY_API_KEY=xxx
